@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon's Gym 💪</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --aqua:#00a896;--aqua-light:#00c8b4;--aqua-pale:rgba(0,168,150,0.08);
+    --gold:#b8922a;--gold-light:#d4aa44;--gold-pale:rgba(184,146,42,0.08);
+    --dark:#0a0f1e;--surface:#ffffff;--surface2:#f4f8f8;--surface3:#e8f4f2;
+    --text-dim:rgba(10,15,30,0.45);--border:rgba(0,168,150,0.2);--border-gold:rgba(184,146,42,0.2);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{background:#f4f8f8 !important;color:var(--dark);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;}
+  @media(prefers-color-scheme:dark){html,body{background:#f4f8f8 !important;color:#0a0f1e !important;}}
+
+  header{background:white;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,168,150,0.08);}
+  .app-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;padding:18px 24px 0;color:var(--dark);}
+  .app-title em{font-style:italic;color:var(--aqua);}
+
+  .day-tabs{display:flex;overflow-x:auto;scrollbar-width:none;border-top:1px solid var(--border);margin-top:12px;}
+  .day-tabs::-webkit-scrollbar{display:none;}
+  .day-tab{padding:12px 16px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-dim);border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:all 0.2s;flex-shrink:0;}
+  .day-tab.active{color:var(--aqua);border-bottom-color:var(--aqua);font-weight:500;}
+  .day-tab.past{color:rgba(0,168,150,0.4);}
+  .day-tab.past::after{content:' ✓';}
+  .day-tab:hover:not(.active){color:var(--dark);}
+
+  main{padding:20px;max-width:640px;margin:0 auto;padding-bottom:100px;}
+  .day-page{display:none;}
+  .day-page.active{display:block;animation:fadeIn 0.3s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* HERO */
+  .day-hero{border-radius:16px;padding:22px;margin-bottom:20px;color:white;position:relative;overflow:hidden;}
+  .day-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.06);}
+  .day-hero.lunes{background:linear-gradient(135deg,#006a6a,#00a896);}
+  .day-hero.martes{background:linear-gradient(135deg,#005a7a,#0088aa);}
+  .day-hero.miercoles{background:linear-gradient(135deg,#007060,#00a88a);}
+  .day-hero.jueves{background:linear-gradient(135deg,#7a6000,#b8922a);}
+  .day-hero.viernes{background:linear-gradient(135deg,#004a6a,#006a9a);}
+  .hero-day{font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:0.8;margin-bottom:6px;}
+  .hero-title{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;margin-bottom:6px;}
+  .hero-sub{font-size:12px;opacity:0.85;line-height:1.5;}
+  .hero-badge{display:inline-block;margin-top:10px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.25);padding:4px 12px;border-radius:20px;font-size:10px;letter-spacing:1px;}
+
+  /* PROGRESS */
+  .day-progress{background:white;border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 10px rgba(0,168,150,0.06);}
+  .prog-ring{position:relative;width:60px;height:60px;flex-shrink:0;}
+  .prog-ring svg{transform:rotate(-90deg);}
+  .prog-ring-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+  .prog-pct{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--aqua);}
+  .prog-info h4{font-size:14px;font-weight:400;margin-bottom:3px;}
+  .prog-info p{font-size:11px;color:var(--text-dim);}
+
+  /* SECTION LABEL */
+  .section-lbl{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--aqua);margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .section-lbl::after{content:'';flex:1;height:1px;background:var(--border);}
+  .section-lbl.gold{color:var(--gold);}
+  .section-lbl.gold::after{background:var(--border-gold);}
+
+  /* WARMUP */
+  .warmup-block{background:white;border:1px solid var(--border-gold);border-radius:14px;padding:18px 20px;margin-bottom:14px;box-shadow:0 2px 10px rgba(184,146,42,0.06);}
+  .warmup-title{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);margin-bottom:14px;}
+  .wu-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(184,146,42,0.08);}
+  .wu-item:last-child{border-bottom:none;padding-bottom:0;}
+  .wu-num{width:22px;height:22px;border-radius:50%;background:var(--gold-pale);border:1px solid var(--border-gold);color:var(--gold);font-size:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+  .wu-content h5{font-size:13px;font-weight:400;color:var(--dark);margin-bottom:2px;}
+  .wu-content p{font-size:11px;color:var(--text-dim);line-height:1.5;}
+  .wu-time{font-size:10px;letter-spacing:1px;color:var(--gold);background:var(--gold-pale);padding:2px 8px;border-radius:10px;white-space:nowrap;margin-left:auto;flex-shrink:0;align-self:flex-start;margin-top:2px;}
+
+  /* EXERCISE CARD */
+  .ex-card{background:white;border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,168,150,0.05);transition:all 0.3s;}
+  .ex-card.done{opacity:0.45;background:#fafafa;}
+  .ex-card:hover{border-color:rgba(0,168,150,0.35);}
+  .ex-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+  .ex-num{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:300;color:rgba(0,168,150,0.18);line-height:1;}
+  .ex-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin-bottom:3px;color:var(--dark);}
+  .ex-machine{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--aqua);margin-bottom:10px;}
+  .ex-check{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s;flex-shrink:0;}
+  .ex-check.done{background:var(--aqua);border-color:var(--aqua);}
+  .ex-check.done::after{content:'✓';color:white;font-size:12px;font-weight:700;}
+  .ex-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+  .ex-tag{padding:4px 12px;border-radius:20px;font-size:10px;letter-spacing:1px;border:1px solid var(--border);color:var(--text-dim);}
+  .ex-tag.aq{background:var(--aqua-pale);border-color:rgba(0,168,150,0.25);color:var(--aqua);}
+  .ex-tag.go{background:var(--gold-pale);border-color:rgba(184,146,42,0.25);color:var(--gold);}
+
+  /* VIDEO LINK */
+  .ex-video{display:flex;align-items:center;gap:10px;padding:11px 14px;background:linear-gradient(135deg,#e8f4f2,#d8f0ec);border:1px solid var(--border);border-radius:10px;text-decoration:none;margin-bottom:12px;transition:all 0.2s;}
+  .ex-video:hover{border-color:var(--aqua);transform:translateX(2px);}
+  .ex-video-icon{font-size:18px;}
+  .vt1{font-size:12px;font-weight:400;color:var(--dark);margin-bottom:1px;}
+  .vt2{font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase;}
+  .ex-video-arr{color:var(--aqua);font-size:13px;margin-left:auto;}
+
+  /* HOW TO */
+  .how-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:var(--aqua);letter-spacing:1px;text-transform:uppercase;user-select:none;}
+  .how-arrow{transition:transform 0.3s;font-size:9px;}
+  .how-toggle.open .how-arrow{transform:rotate(180deg);}
+  .how-body{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+  .how-body.open{display:block;}
+  .how-step{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start;}
+  .how-n{width:18px;height:18px;border-radius:50%;background:var(--aqua-pale);color:var(--aqua);font-size:9px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+  .how-t{font-size:13px;line-height:1.6;color:var(--dark);}
+  .how-tip{margin-top:10px;padding:9px 12px;background:var(--gold-pale);border-left:2px solid var(--gold-light);font-size:12px;color:var(--gold);font-style:italic;border-radius:0 8px 8px 0;}
+
+  /* REST */
+  .rest-card{background:var(--aqua-pale);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px;}
+  .rest-icon{font-size:22px;}
+  .rest-text h4{font-size:13px;font-weight:400;margin-bottom:2px;}
+  .rest-text p{font-size:11px;color:var(--text-dim);}
+
+  /* TIMER */
+  .timer-card{background:linear-gradient(135deg,#005a6a,var(--aqua));border-radius:14px;padding:20px;margin-bottom:16px;color:white;text-align:center;}
+  .timer-lbl{font-size:9px;letter-spacing:3px;text-transform:uppercase;opacity:0.8;margin-bottom:6px;}
+  .timer-disp{font-family:'Cormorant Garamond',serif;font-size:56px;font-weight:300;line-height:1;margin-bottom:14px;}
+  .timer-btns{display:flex;justify-content:center;gap:10px;}
+  .tbtn{padding:9px 20px;border-radius:8px;border:none;font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
+  .tbtn.start{background:white;color:#005a6a;}
+  .tbtn.reset{background:rgba(255,255,255,0.2);color:white;}
+  .timer-presets{display:flex;gap:8px;justify-content:center;margin-top:10px;}
+  .tpre{padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.12);color:white;font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+  /* CARDIO */
+  .cardio-card{background:white;border:1px solid var(--border-gold);border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:0 2px 10px rgba(184,146,42,0.06);}
+  .cardio-card h3{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;margin-bottom:12px;color:var(--dark);}
+  .cardio-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(184,146,42,0.08);}
+  .cardio-row:last-child{border-bottom:none;}
+  .cardio-k{font-size:12px;color:var(--text-dim);}
+  .cardio-v{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--gold);}
+
+  /* BOTTOM NAV */
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid var(--border);padding:12px 20px;display:flex;gap:10px;z-index:100;box-shadow:0 -2px 16px rgba(0,168,150,0.08);}
+  .bnav-prev{flex:1;padding:11px;border:1.5px solid var(--border);border-radius:10px;background:none;font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);cursor:pointer;}
+  .bnav-next{flex:2;padding:11px;background:linear-gradient(135deg,#005a6a,var(--aqua-light));border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:white;cursor:pointer;}
+  .bnav-prev:hover{border-color:var(--aqua);color:var(--aqua);}
+  .bnav-next:hover{opacity:0.9;}
+</style>
+</head>
+<body>
+<header>
+  <div class="app-title">Mon's <em>Gym</em> 💪</div>
+  <div class="day-tabs" id="dayTabs"></div>
+</header>
+<main id="mainContent"></main>
+<div class="bottom-nav">
+  <button class="bnav-prev" onclick="prevDay()">← Anterior</button>
+  <button class="bnav-next" onclick="nextDay()" id="nextBtn">Siguiente →</button>
+</div>
+
+<script>
+const days = [
+  {
+    id:'lunes', label:'Lunes', theme:'lunes', past:true,
+    title:'Glúteo & Pierna', sub:'La base de todo. Piernas fuertes = metabolismo activo.',
+    warmup:[
+      {name:'Círculos de cadera',desc:'De pie, manos en la cintura. Haz círculos grandes con la cadera, 10 hacia cada lado.',time:'40 seg'},
+      {name:'Marcha en su lugar',desc:'Levanta las rodillas alternando, como marchando. Sube los brazos al ritmo.',time:'40 seg'},
+      {name:'Estiramiento de cuádricep de pie',desc:'Párate en un pie, jala el otro talón hacia el glúteo. Aguanta 20 seg por lado.',time:'40 seg'},
+    ],
+    sections:[{ name:'Glúteo & Pierna', exercises:[
+      {num:'01',name:'Prensa de pierna',machine:'Máquina leg press',sets:'4 series · 12 reps',rest:90,
+       yt:'https://www.youtube.com/results?search_query=prensa+pierna+leg+press+maquina',
+       steps:['Siéntate, pies al ancho de caderas en la mitad de la plataforma.','Baja lento doblando rodillas a 90°, sin que se vayan hacia adentro.','Empuja con los talones hasta casi extender, sin bloquear.'],
+       tip:'Pies más arriba = más glúteo. Pies más abajo = más cuádriceps.'},
+      {num:'02',name:'Curl de pierna acostada',machine:'Máquina curl prone (boca abajo)',sets:'4 series · 12 reps',rest:60,
+       yt:'https://www.youtube.com/results?search_query=curl+pierna+acostada+maquina+femoral',
+       steps:['Acuéstate boca abajo. Rodillo sobre los tobillos.','Jala los talones hacia los glúteos.','Aprieta los isquiotibiales arriba, aguanta 1 seg.','Baja 3 segundos.'],
+       tip:'No levantes las caderas. El movimiento es solo de la rodilla.'},
+      {num:'03',name:'Curl de pierna sentada',machine:'Máquina curl sentada',sets:'4 series · 12 reps',rest:60,
+       yt:'https://www.youtube.com/results?search_query=curl+pierna+sentada+maquina',
+       steps:['Siéntate, rodillo sobre los tobillos encima.','Dobla las piernas jalando hacia abajo.','Aprieta femorales abajo, aguanta.','Sube lento.'],
+       tip:'Menos presión en la espalda baja que el curl acostado.'},
+      {num:'04',name:'Extensión de pierna',machine:'Máquina de extensión',sets:'4 series · 15 reps',rest:60,
+       yt:'https://www.youtube.com/results?search_query=extension+pierna+maquina+cuadriceps',
+       steps:['Rodillo sobre el empeine.','Extiende apretando el cuádricep.','Aguanta 1 seg arriba.','Baja controlado.'],
+       tip:'Trabaja el frente del muslo. Equilibra el trabajo de glúteo y femoral.'},
+      {num:'05',name:'Abducción de cadera',machine:'Máquina mariposa piernas (externa)',sets:'4 series · 15 reps',rest:60,
+       yt:'https://www.youtube.com/results?search_query=abduccion+cadera+maquina+gluteo+medio',
+       steps:['Cojines en la parte externa de las rodillas.','Abre las piernas contra la resistencia.','Aprieta el glúteo al abrir, aguanta 1 seg.','Cierra lento.'],
+       tip:'Trabaja el glúteo medio — el que da la curva lateral y el look redondo.'},
+      {num:'06',name:'Aducción de cadera',machine:'Máquina mariposa piernas (interna)',sets:'3 series · 15 reps',rest:60,
+       yt:'https://www.youtube.com/results?search_query=aduccion+cadera+maquina+interior+muslo',
+       steps:['Ahora los cojines en la parte interna de las rodillas.','Junta las piernas contra la resistencia.','Abre lento.'],
+       tip:'Interior del muslo. Junto con la abducción da piernas equilibradas.'},
+      {num:'07',name:'Elevación de gemelo de pie',machine:'Máquina de gemelo de pie',sets:'4 series · 20 reps',rest:45,
+       yt:'https://www.youtube.com/results?search_query=elevacion+gemelo+maquina+pantorrilla',
+       steps:['Pies en el borde de la plataforma, talones colgando.','Sube de puntillas lo más alto posible.','Aguanta 1 seg arriba.','Baja hasta sentir el estiramiento.'],
+       tip:'El gemelo necesita muchas reps para desarrollarse. 20 mínimo.'},
+      {num:'08',name:'Prensa pies altos — glúteo',machine:'Máquina leg press (variante)',sets:'3 series · 15 reps',rest:90,
+       yt:'https://www.youtube.com/results?search_query=prensa+pierna+pies+arriba+gluteo+isquiotibial',
+       steps:['Igual que el 01 pero pies en la parte alta de la plataforma.','El peso cae más en glúteo e isquiotibiales.','Baja lento, empuja con talones.'],
+       tip:'Cambiar posición de pies cambia qué músculo trabaja más.'},
+    ]}]
+  },
+  {
+    id:'martes', label:'Martes', theme:'martes', past:true,
+    title:'Espalda & Bíceps', sub:'Espalda fuerte = postura perfecta. Ya lo hiciste 💪',
+    warmup:[
+      {name:'Rotación de hombros',desc:'De pie, haz círculos grandes con los hombros. 10 hacia adelante, 10 hacia atrás.',time:'40 seg'},
+      {name:'Gato-Vaca de pie',desc:'Manos en rodillas ligeramente dobladas. Arquea la espalda (vaca), luego redondéala (gato). Lento.',time:'40 seg'},
+      {name:'Círculos de muñecas',desc:'Brazos al frente, puños cerrados. Círculos lentos con las muñecas en ambas direcciones.',time:'30 seg'},
+    ],
+    sections:[
+      { name:'Espalda', exercises:[
+        {num:'01',name:'Jalón al pecho en polea',machine:'Máquina polea alta — barra ancha',sets:'4 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=jalon+pecho+polea+alta+ejercicio',
+         steps:['Ajusta el rodillo sobre los muslos. Agarre ancho.','Saca el pecho y jala la barra hacia él.','Junta los codos abajo, aprieta la espalda.','Sube lento.'],
+         tip:'Imagina que quieres juntar los codos abajo. Más espalda, menos brazos.'},
+        {num:'02',name:'Remo en polea baja sentada',machine:'Polea baja — accesorio en V',sets:'4 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=remo+polea+baja+sentada+ejercicio',
+         steps:['Pies en los apoyos, rodillas ligeramente dobladas.','Jala codos hacia atrás pegados al cuerpo.','Aprieta omóplatos al final.','Regresa lento.'],
+         tip:'Espalda recta todo el tiempo. No te encorves al soltar.'},
+        {num:'03',name:'Mariposa inversa',machine:'Pec deck al revés',sets:'4 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=mariposa+inversa+pec+deck+espalda',
+         steps:['Siéntate al revés, de frente al respaldo.','Brazos casi extendidos, abre hacia atrás.','Aprieta omóplatos, aguanta 1 seg.','Regresa controlada.'],
+         tip:'EL ejercicio para los gorditos de la espalda.'},
+        {num:'04',name:'Pullover en polea alta',machine:'Polea alta — barra recta',sets:'3 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=pullover+polea+alta+espalda+ejercicio',
+         steps:['De pie frente a la polea alta, agarra la barra con brazos extendidos.','Jala hacia abajo en arco hasta la cintura, brazos casi rectos.','Siente el estiramiento en la espalda.','Regresa lento.'],
+         tip:'Trabaja el dorsal desde un ángulo diferente. Excelente para la amplitud de espalda.'},
+      ]},
+      { name:'Bíceps', exercises:[
+        {num:'05',name:'Curl en máquina',machine:'Máquina de curl de bíceps',sets:'4 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=curl+biceps+maquina+ejercicio',
+         steps:['Codos fijos, palmas hacia arriba.','Sube apretando el bíceps.','Baja 3 segundos.'],
+         tip:'Si el cuerpo se balancea, el peso está muy alto.'},
+        {num:'06',name:'Curl en polea baja con barra',machine:'Polea baja + barra recta',sets:'4 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=curl+biceps+polea+baja+barra',
+         steps:['De pie, agarra la barra palmas arriba.','Codos pegados al cuerpo, no se mueven.','Sube hacia los hombros, aprieta arriba.','Baja lento.'],
+         tip:'La polea da tensión constante, trabaja igual al subir y al bajar.'},
+        {num:'07',name:'Curl martillo en polea',machine:'Polea baja + cuerda',sets:'3 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=curl+martillo+polea+cuerda+biceps',
+         steps:['Agarra la cuerda con agarre neutro (pulgares arriba).','Codos fijos, sube la cuerda hacia los hombros.','Baja lento.'],
+         tip:'El agarre neutro trabaja el braquial — da más grosor y definición al brazo.'},
+        {num:'08',name:'Curl concentrado en polea',machine:'Polea baja — agarre individual',sets:'3 series · 10 reps c/brazo',rest:45,
+         yt:'https://www.youtube.com/results?search_query=curl+concentrado+polea+biceps+un+brazo',
+         steps:['De lado a la polea baja. Agarra con una mano.','Codo pegado al cuerpo, sube hacia el hombro.','Aprieta fuerte arriba.','Baja lento. Cambia de brazo.'],
+         tip:'Trabajar un brazo a la vez elimina compensaciones.'},
+      ]}
+    ]
+  },
+  {
+    id:'miercoles', label:'Miércoles', theme:'miercoles', today:true,
+    title:'Pecho & Tríceps', sub:'Pecho tonificado + tríceps definido. El brazo que más se ve. 💪',
+    warmup:[
+      {name:'Rotación de hombros',desc:'Círculos grandes hacia adelante y hacia atrás. 10 de cada lado.',time:'40 seg'},
+      {name:'Apertura de pecho de pie',desc:'Entrelaza los dedos atrás de la espalda. Saca el pecho y jala los brazos hacia abajo. Aguanta.',time:'30 seg'},
+      {name:'Círculos de muñecas',desc:'Brazos al frente, círculos lentos en ambas direcciones.',time:'30 seg'},
+    ],
+    sections:[
+      { name:'Pecho', exercises:[
+        {num:'01',name:'Press de pecho en máquina',machine:'Máquina press de pecho',sets:'4 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=press+pecho+maquina+ejercicio',
+         steps:['Manijas a la altura del pecho. Agarre con palmas adelante.','Empuja extendiendo sin bloquear codos.','Regresa lento sintiendo el pecho jalarse.'],
+         tip:'No arquees la espalda. Mantén el respaldo todo el tiempo.'},
+        {num:'02',name:'Mariposa en máquina (pec deck)',machine:'Máquina pec deck',sets:'4 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=pec+deck+mariposa+maquina+pecho',
+         steps:['Cojines a la altura del pecho.','Junta los brazos al frente como abrazando.','Aguanta 1 seg al juntar.','Abre lento — siente el estiramiento.'],
+         tip:'El pecho bien trabajado da lift natural y mejor postura.'},
+        {num:'03',name:'Press inclinado en máquina',machine:'Máquina press inclinado',sets:'4 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=press+inclinado+maquina+pecho+superior',
+         steps:['Asiento inclinado. Mismo agarre que el press plano.','Empuja hacia arriba y adelante.','Baja controlado.'],
+         tip:'Trabaja la parte superior del pecho — da forma y contorno.'},
+        {num:'04',name:'Cruce de poleas para pecho',machine:'Poleas cruzadas (cable crossover)',sets:'3 series · 15 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=cruce+poleas+pecho+cable+crossover',
+         steps:['Párate en medio de las dos poleas altas.','Agarra un extremo con cada mano, brazos abiertos.','Junta las manos al frente en arco.','Abre lento.'],
+         tip:'Da definición y separación al pecho. El ejercicio final que talla.'},
+      ]},
+      { name:'Tríceps', exercises:[
+        {num:'05',name:'Extensión de tríceps con cuerda',machine:'Polea alta + cuerda',sets:'4 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=extension+triceps+cuerda+polea',
+         steps:['Codos pegados al cuerpo.','Empuja hacia abajo y separa manos al final.','Sube controlado.'],
+         tip:'El tríceps es 2/3 del brazo. Definirlo es lo que más se nota.'},
+        {num:'06',name:'Press de tríceps en máquina',machine:'Máquina dip asistido',sets:'4 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=press+triceps+maquina+dip',
+         steps:['Manijas a nivel de hombros.','Empuja hacia abajo extendiendo completamente.','Regresa sin que codos suban más de 90°.'],
+         tip:'Si no hay máquina, repite la cuerda con barra recta.'},
+        {num:'07',name:'Extensión de tríceps sobre cabeza',machine:'Polea baja + cuerda',sets:'3 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=extension+triceps+sobre+cabeza+polea',
+         steps:['De espaldas a la polea baja. Agarra la cuerda con ambas manos.','Lleva la cuerda sobre la cabeza, codos al frente.','Extiende los brazos hacia adelante.','Regresa lento.'],
+         tip:'Trabaja la cabeza larga del tríceps — la parte que más se ve por detrás.'},
+        {num:'08',name:'Patada de tríceps en polea',machine:'Polea baja — agarre individual',sets:'3 series · 12 reps c/brazo',rest:45,
+         yt:'https://www.youtube.com/results?search_query=patada+triceps+polea+un+brazo',
+         steps:['Inclínate hacia adelante frente a la polea baja.','Codo pegado al cuerpo a 90°. Extiende el brazo hacia atrás.','Aprieta el tríceps al extender.','Regresa lento. Cambia de brazo.'],
+         tip:'Aislamiento total del tríceps. Perfecto al final.'},
+      ]}
+    ]
+  },
+  {
+    id:'jueves', label:'Jueves', theme:'jueves',
+    title:'Hombros & Core', sub:'Hombros que dan figura + core para la cinturita. 🔥',
+    warmup:[
+      {name:'Rotación de cuello',desc:'Lento, baja la cabeza hacia el pecho, gira hacia un lado, atrás, y al otro. Sin forzar.',time:'30 seg'},
+      {name:'Círculos de hombros',desc:'Brazos a los lados, círculos grandes hacia adelante y hacia atrás.',time:'40 seg'},
+      {name:'Giro de torso de pie',desc:'Pies al ancho de hombros, gira el torso de lado a lado con los brazos sueltos.',time:'40 seg'},
+    ],
+    sections:[
+      { name:'Hombros', exercises:[
+        {num:'01',name:'Press de hombro en máquina',machine:'Máquina press de hombro',sets:'4 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=press+hombro+maquina+ejercicio',
+         steps:['Manijas a altura de hombros.','Empuja hacia arriba sin bloquear codos.','Baja lento a 90°.'],
+         tip:'No subas los hombros hacia las orejas. Cuello largo.'},
+        {num:'02',name:'Elevación lateral en máquina',machine:'Máquina elevación lateral',sets:'4 series · 15 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=elevacion+lateral+maquina+hombros',
+         steps:['Cojines en codos o muñecas.','Eleva hacia los lados hasta la altura de hombros.','Baja 3 segundos.'],
+         tip:'Da el look de hombros anchos y cintura angosta.'},
+        {num:'03',name:'Elevación frontal en polea',machine:'Polea baja + barra o disco',sets:'3 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=elevacion+frontal+polea+hombro+anterior',
+         steps:['De pie frente a la polea baja. Agarra la barra.','Eleva los brazos al frente hasta la altura de los hombros.','Baja lento.'],
+         tip:'Trabaja el hombro frontal. Completa el trabajo lateral para hombros redondeados.'},
+        {num:'04',name:'Remo al mentón en polea',machine:'Polea baja + barra recta',sets:'3 series · 12 reps',rest:60,
+         yt:'https://www.youtube.com/results?search_query=remo+menton+polea+hombros+trapecio',
+         steps:['Agarre estrecho en la barra.','Jala hacia arriba llevando codos por encima de hombros.','Pausa arriba, baja lento.'],
+         tip:'Activa hombro lateral y trapecio. Da el efecto de hombros más anchos.'},
+      ]},
+      { name:'Core', exercises:[
+        {num:'05',name:'Crunch en máquina',machine:'Máquina abdominal',sets:'3 series · 15 reps',rest:45,
+         yt:'https://www.youtube.com/results?search_query=crunch+maquina+abdominal',
+         steps:['Agarra las manijas. Dobla el torso con el abdomen.','Aguanta 1 seg abajo apretando.','Sube lento sin soltar tensión.'],
+         tip:'Despacio. Si sientes el cuello, baja el peso.'},
+        {num:'06',name:'Rotación de torso en máquina',machine:'Máquina rotacional de torso',sets:'3 series · 12 reps c/lado',rest:45,
+         yt:'https://www.youtube.com/results?search_query=rotacion+torso+maquina+oblicuos',
+         steps:['Gira el torso hacia un lado usando el abdomen.','12 reps de un lado, luego cambia.'],
+         tip:'Trabaja los oblicuos — lo que da la cintura marcada.'},
+        {num:'07',name:'Cable crunch en polea',machine:'Polea alta + cuerda',sets:'3 series · 15 reps',rest:45,
+         yt:'https://www.youtube.com/results?search_query=cable+crunch+polea+abdomen+arrodillada',
+         steps:['Arrodíllate frente a la polea alta. Cuerda a los lados de la cabeza.','Dobla el torso con el abdomen.','Regresa lento.'],
+         tip:'El movimiento viene del abdomen, no de los brazos.'},
+        {num:'08',name:'Elevación de piernas en máquina',machine:'Máquina capitán / elevación de piernas',sets:'3 series · 15 reps',rest:45,
+         yt:'https://www.youtube.com/results?search_query=elevacion+piernas+maquina+capitan+abdomen',
+         steps:['Apoya los codos en los agarres. Espalda pegada al respaldo.','Eleva las rodillas hacia el pecho contrayendo el abdomen.','Baja lento sin balancear.'],
+         tip:'La parte baja del abdomen. Junto con el crunch cubre todo el core.'},
+      ]}
+    ]
+  },
+  {
+    id:'viernes', label:'Viernes', theme:'viernes',
+    title:'Pierna Completa & Cardio', sub:'Terminas la semana fuerte. Pierna completa + cardio extra. 🔥',
+    warmup:[
+      {name:'Círculos de cadera',desc:'Manos en la cintura, círculos grandes con la cadera. 10 hacia cada lado.',time:'40 seg'},
+      {name:'Marcha en su lugar',desc:'Levanta las rodillas alternando, bien alto. Activa piernas y cadera.',time:'40 seg'},
+      {name:'Estiramiento de gemelo de pie',desc:'Apoya la punta del pie en una pared o escalón, talón abajo. Aguanta 20 seg por lado.',time:'40 seg'},
+    ],
+    sections:[{ name:'Pierna completa', exercises:[
+      {num:'01',name:'Prensa pies altos — glúteo',machine:'Máquina leg press',sets:'4 series · 12 reps',rest:90,
+       yt:'https://www.youtube.com/results?search_query=prensa+pierna+pies+arriba+gluteo',
+       steps:['Pies en la parte alta de la plataforma.','Baja lento, empuja con talones.','Énfasis en glúteo e isquiotibiales.'],
+       tip:'Semana terminando fuerte. El ejercicio base más importante.'},
+      {num:'02',name:'Extensión de pierna',machine:'Máquina de extensión',sets:'4 series · 15 reps',rest:60,
+       yt:'https://www.youtube.com/results?search_query=extension+pierna+maquina+cuadriceps',
+       steps:['Rodillo sobre el empeine.','Extiende apretando el cuádricep.','Aguanta 1 seg. Baja controlado.'],
+       tip:'Cuádricep = frente del muslo. Esencial para piernas tonificadas.'},
+      {num:'03',name:'Curl de pierna acostada',machine:'Máquina curl prone',sets:'4 series · 12 reps',rest:60,
+       yt:'https://www.youtube.com/results?search_query=curl+pierna+acostada+femoral+maquina',
+       steps:['Rodillo sobre los tobillos.','Jala talones hacia glúteos.','Baja 3 segundos.'],
+       tip:'Femorales fuertes protegen las rodillas.'},
+      {num:'04',name:'Abducción de cadera',machine:'Máquina mariposa piernas (externa)',sets:'4 series · 15 reps',rest:60,
+       yt:'https://www.youtube.com/results?search_query=abduccion+cadera+maquina+gluteo',
+       steps:['Cojines en la parte externa. Abre contra resistencia.','Aprieta el glúteo. Cierra lento.'],
+       tip:'Glúteo medio = curva lateral. No lo saltes nunca.'},
+      {num:'05',name:'Aducción de cadera',machine:'Máquina mariposa piernas (interna)',sets:'3 series · 15 reps',rest:60,
+       yt:'https://www.youtube.com/results?search_query=aduccion+cadera+maquina+interior+muslo',
+       steps:['Cojines en la parte interna. Junta contra resistencia.','Abre lento.'],
+       tip:'Interior del muslo equilibrado con el exterior.'},
+      {num:'06',name:'Elevación de gemelo sentada',machine:'Máquina gemelo sentada',sets:'4 series · 20 reps',rest:45,
+       yt:'https://www.youtube.com/results?search_query=elevacion+gemelo+sentada+maquina+pantorrilla',
+       steps:['Rodillo sobre los muslos. Pies en punta.','Sube de puntillas lo más alto posible.','Aguanta 1 seg. Baja hasta el estiramiento.'],
+       tip:'Sentada trabaja el sóleo — músculo profundo debajo del gemelo.'},
+      {num:'07',name:'Sentadilla en máquina Smith',machine:'Máquina Smith / multipower',sets:'3 series · 12 reps',rest:90,
+       yt:'https://www.youtube.com/results?search_query=sentadilla+maquina+smith+multipower',
+       steps:['Barra sobre los hombros (no el cuello). Pies ligeramente adelante.','Baja como si te sentaras, rodillas alineadas con pies.','Sube empujando con los talones.'],
+       tip:'La Smith da guía — perfecta para principiantes. No tengas miedo.'},
+      {num:'08',name:'Hip thrust en máquina',machine:'Máquina hip thrust / glúteo',sets:'4 series · 12 reps',rest:60,
+       yt:'https://www.youtube.com/results?search_query=hip+thrust+maquina+gluteo+ejercicio',
+       steps:['Espalda apoyada en el banco. Pies al ancho de caderas.','Empuja las caderas hacia arriba apretando el glúteo.','Aguanta 1 seg arriba. Baja controlado.'],
+       tip:'EL ejercicio número 1 para glúteo. Cierra la semana con todo. 🔥'},
+    ]}]
+  }
+];
+
+let currentDay = 2;
+let timerSec = 60, timerRunning = false, timerInterval = null;
+const checked = {};
+
+function renderTabs() {
+  document.getElementById('dayTabs').innerHTML = days.map((d,i) => {
+    let cls = 'day-tab';
+    if(i===currentDay) cls+=' active';
+    else if(d.past) cls+=' past';
+    return `<button class="${cls}" onclick="goDay(${i})">${d.label}${d.today?' ⚡':''}</button>`;
+  }).join('');
+}
+
+function renderDay(idx) {
+  const d = days[idx];
+  const totalEx = d.sections.reduce((s,sec)=>s+sec.exercises.length,0);
+
+  let html = `
+    <div class="day-hero ${d.theme}">
+      <div class="hero-day">${d.label}${d.today?' · Hoy':d.past?' · Completado':''}</div>
+      <div class="hero-title">${d.title}</div>
+      <div class="hero-sub">${d.sub}</div>
+      ${d.today?'<div class="hero-badge">⚡ Tu sesión de hoy</div>':d.past?'<div class="hero-badge">✓ Ya lo hiciste</div>':''}
+    </div>
+    <div class="day-progress">
+      <div class="prog-ring">
+        <svg width="60" height="60" viewBox="0 0 60 60">
+          <circle cx="30" cy="30" r="24" fill="none" stroke="rgba(0,168,150,0.12)" stroke-width="3"/>
+          <circle id="progCirc" cx="30" cy="30" r="24" fill="none" stroke="#00a896" stroke-width="3"
+            stroke-dasharray="150.8" stroke-dashoffset="150.8" stroke-linecap="round"/>
+        </svg>
+        <div class="prog-ring-text"><div class="prog-pct" id="progPct">0%</div></div>
+      </div>
+      <div class="prog-info">
+        <h4>${d.title}</h4>
+        <p id="progMsg">${totalEx} ejercicios + 20 min caminadora</p>
+      </div>
+    </div>`;
+
+  // WARMUP
+  html += `<div class="section-lbl gold">Calentamiento ✦</div>
+    <div class="warmup-block">
+      <div class="warmup-title">🔥 Antes de empezar — ~3 min</div>`;
+  d.warmup.forEach((w,i) => {
+    html += `<div class="wu-item">
+      <div class="wu-num">${i+1}</div>
+      <div class="wu-content"><h5>${w.name}</h5><p>${w.desc}</p></div>
+      <div class="wu-time">${w.time}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // EXERCISES
+  d.sections.forEach(sec => {
+    html += `<div class="section-lbl">${sec.name}</div>
+    <div class="rest-card"><div class="rest-icon">⏱</div><div class="rest-text"><h4>Descanso entre series</h4><p>60–90 seg. Usa el timer de abajo.</p></div></div>`;
+    sec.exercises.forEach(ex => {
+      const key = `${idx}_${ex.num}`;
+      const isDone = !!checked[key];
+      html += `
+        <div class="ex-card${isDone?' done':''}" id="excard_${key}">
+          <div class="ex-header">
+            <div>
+              <div class="ex-num">${ex.num}</div>
+              <div class="ex-name">${ex.name}</div>
+              <div class="ex-machine">🏋️ ${ex.machine}</div>
+            </div>
+            <div class="ex-check${isDone?' done':''}" id="excheck_${key}" onclick="toggleEx(${idx},'${ex.num}')"></div>
+          </div>
+          <div class="ex-tags">
+            <span class="ex-tag aq">${ex.sets}</span>
+            <span class="ex-tag go">Descanso ${ex.rest}s</span>
+          </div>
+          <a class="ex-video" href="${ex.yt}" target="_blank">
+            <span class="ex-video-icon">▶️</span>
+            <div class="ex-video-text"><div class="vt1">Ver en YouTube</div><div class="vt2">${ex.name}</div></div>
+            <span class="ex-video-arr">→</span>
+          </a>
+          <div class="how-toggle" onclick="toggleHow(this)"><span>¿Cómo se hace?</span><span class="how-arrow">▼</span></div>
+          <div class="how-body">
+            ${ex.steps.map((s,i)=>`<div class="how-step"><div class="how-n">${i+1}</div><div class="how-t">${s}</div></div>`).join('')}
+            <div class="how-tip">💡 ${ex.tip}</div>
+          </div>
+        </div>`;
+    });
+  });
+
+  // TIMER
+  html += `
+    <div class="timer-card">
+      <div class="timer-lbl">Timer de descanso</div>
+      <div class="timer-disp" id="timerDisp">01:00</div>
+      <div class="timer-btns">
+        <button class="tbtn start" id="timerStartBtn" onclick="toggleTimer()">▶ Iniciar</button>
+        <button class="tbtn reset" onclick="resetTimer()">↺ Reset</button>
+      </div>
+      <div class="timer-presets">
+        <button class="tpre" onclick="setTimer(45)">45s</button>
+        <button class="tpre" onclick="setTimer(60)">60s</button>
+        <button class="tpre" onclick="setTimer(90)">90s</button>
+      </div>
+    </div>`;
+
+  // CARDIO
+  html += `
+    <div class="section-lbl gold">Caminadora ✦</div>
+    <div class="cardio-card">
+      <h3>20 min al final 🚶‍♀️</h3>
+      <div class="cardio-row"><span class="cardio-k">Tiempo</span><span class="cardio-v">20 minutos</span></div>
+      <div class="cardio-row"><span class="cardio-k">Inclinación</span><span class="cardio-v">8 – 10</span></div>
+      <div class="cardio-row"><span class="cardio-k">Velocidad</span><span class="cardio-v">Caminata rápida, sin correr</span></div>
+      <div class="cardio-row"><span class="cardio-k">Pasamanos</span><span class="cardio-v">Solo si necesitas equilibrio</span></div>
+    </div>`;
+
+  document.getElementById('mainContent').innerHTML = `<div class="day-page active">${html}</div>`;
+  window.scrollTo(0,0);
+  resetTimer();
+  updateProgress(idx);
+}
+
+function goDay(idx) {
+  currentDay = idx;
+  renderTabs();
+  renderDay(idx);
+  document.getElementById('nextBtn').textContent = idx===days.length-1?'¡Fin de semana! 🔥':'Siguiente día →';
+}
+
+function nextDay(){if(currentDay<days.length-1)goDay(currentDay+1);}
+function prevDay(){if(currentDay>0)goDay(currentDay-1);}
+
+function toggleEx(dayIdx,num){
+  const key=`${dayIdx}_${num}`;
+  checked[key]=!checked[key];
+  const card=document.getElementById(`excard_${key}`);
+  const chk=document.getElementById(`excheck_${key}`);
+  if(checked[key]){card.classList.add('done');chk.classList.add('done');}
+  else{card.classList.remove('done');chk.classList.remove('done');}
+  updateProgress(dayIdx);
+}
+
+function updateProgress(idx){
+  const d=days[idx];
+  const total=d.sections.reduce((s,sec)=>s+sec.exercises.length,0);
+  const done=Object.entries(checked).filter(([k,v])=>k.startsWith(`${idx}_`)&&v).length;
+  const pct=Math.round((done/total)*100);
+  const circ=document.getElementById('progCirc');
+  if(!circ)return;
+  circ.style.strokeDashoffset=150.8-(pct/100)*150.8;
+  document.getElementById('progPct').textContent=pct+'%';
+  const msgs=[`${total} ejercicios + 20 min caminadora`,'Arrancando 💪','A mitad del camino 🔥','Casi lista ✨','¡Día completo! 💪'];
+  document.getElementById('progMsg').textContent=msgs[pct===100?4:pct>=75?3:pct>=50?2:pct>=25?1:0];
+}
+
+function toggleHow(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open');}
+
+function updateTimerDisp(){
+  const el=document.getElementById('timerDisp');if(!el)return;
+  el.textContent=`${Math.floor(timerSec/60).toString().padStart(2,'0')}:${(timerSec%60).toString().padStart(2,'0')}`;
+}
+function toggleTimer(){
+  if(timerRunning){clearInterval(timerInterval);timerRunning=false;const b=document.getElementById('timerStartBtn');if(b)b.textContent='▶ Iniciar';}
+  else{timerRunning=true;const b=document.getElementById('timerStartBtn');if(b)b.textContent='⏸ Pausar';
+    timerInterval=setInterval(()=>{if(timerSec<=0){clearInterval(timerInterval);timerRunning=false;const b=document.getElementById('timerStartBtn');if(b)b.textContent='▶ Iniciar';return;}timerSec--;updateTimerDisp();},1000);}
+}
+function resetTimer(){clearInterval(timerInterval);timerRunning=false;timerSec=60;updateTimerDisp();const b=document.getElementById('timerStartBtn');if(b)b.textContent='▶ Iniciar';}
+function setTimer(s){clearInterval(timerInterval);timerRunning=false;timerSec=s;updateTimerDisp();const b=document.getElementById('timerStartBtn');if(b)b.textContent='▶ Iniciar';}
+
+goDay(currentDay);
+</script>
+</body>
+</html>
